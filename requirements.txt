@@ -1,0 +1,39 @@
+########################
+#  Core agent stack
+########################
+langgraph==0.5.3                # graph runtime
+langchain-core==0.3.69          # shared kernel
+langchain==0.3.26               # high-level chains & tools
+langchain-community==0.3.27     # integrations (Chroma, OpenAI embeddings, …)
+langchain-openai==0.3.28        # thin proxy around OpenAI Python SDK
+langsmith==0.4.7                # for logging & debugging
+
+########################
+#  LLM & tokenizer
+########################
+openai==1.97.0
+tiktoken==0.9.0
+
+########################
+#  Vector database (client SDK)
+########################
+chromadb==1.0.15                # works with Chroma Server ≥1.0
+
+########################
+#  Web / Telegram layer
+########################
+python-telegram-bot[webhooks]==22.2
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+
+########################
+#  Settings / config
+########################
+pydantic==2.7.4
+pydantic-settings==2.4.0
+python-dotenv==1.1.1            # loads .env in dev & prod
+
+########################
+#  PDF extraction
+########################
+pypdf==5.8.0
