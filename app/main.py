@@ -1,25 +1,39 @@
+# app/main.py
+from __future__ import annotations
 from fastapi import FastAPI, Request
 from telegram import Update
-from app.bot.handlers import build_application        # your handlers builder
-from app.config import settings                       # loads TELEGRAM_BOT_TOKEN
+from contextlib import asynccontextmanager
 
-# 1  create both frameworks
-app          = FastAPI()
-fastapi_app  = app            # alias for uvicorn
+from app.bot.handlers import build_application
+from app.config import settings
+
+# Build both apps
 telegram_app = build_application(settings.telegram_token)
-print("DEBUG OPENAI key loaded? ", bool(settings.openai_key))
-print("DEBUG TELEGRAM token loaded? ", bool(settings.telegram_token))
 
-# 2  expose root for quick health-check
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # --- START PTB ---
+    await telegram_app.initialize()
+    await telegram_app.start()
+    print("PTB started:", telegram_app.running)   # should print True
+    try:
+        yield
+    finally:
+        # --- STOP PTB ---
+        await telegram_app.stop()
+        await telegram_app.shutdown()
+        print("PTB stopped")
+
+app = FastAPI(lifespan=lifespan)
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to LearnBot"}
 
-# 3  Telegram webhook endpoint
 @app.post("/webhook")
 async def telegram_webhook(req: Request):
     data = await req.json()
     update = Update.de_json(data, telegram_app.bot)
-    print("Webhook hit:", data["update_id"])
+    print("Webhook hit:", data.get("update_id"))
     await telegram_app.update_queue.put(update)
     return {"ok": True}
